@@ -2,6 +2,7 @@ import requests
 from requests import Response
 import json
 
+
 '''Reads the JSON data from the url and saves it in appropriate python format (dictionary)'''
 class BackendReader:
     json_dict = []
@@ -31,9 +32,11 @@ class BackendReader:
         for key in trim_keys:
             self.json_dict.pop(key)
 
-    # TODO: continue
-    def send_graph_data(self) -> None:
-        print('do something')
+    def get_json_dict(self) -> dict:
+        return self.json_dict
+
+    def get_dict_graph(self) -> dict:
+        return self.json_dict['graph']
 
     def get_dict_nodes(self) -> dict:
         return self.json_dict['graph']['nodes']
@@ -48,4 +51,5 @@ class BackendReader:
         return self.json_dict['graph']['edges'][index]
 
 
-b = BackendReader('http://localhost:8000/graphs/')
+reader = BackendReader('http://localhost:8000/graphs/')
+reader.get_json_dict()
