@@ -24,7 +24,6 @@ class BackendReader:
         self.trim_dict(['status'])
 
         print(self.get_dict_node_at(0))
-        print('test')
 
     def trim_dict(self, trim_keys: list[str]) -> None:
         for key in trim_keys:
