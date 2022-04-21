@@ -16,7 +16,7 @@ class BackendReader:
 
         if not request_response.status_code == 200:
             raise RuntimeError(
-                'Request to page ' + self.string_url + ' failed with status code ' + str(request_response.status_code))
+                'Get-Request to page ' + self.string_url + ' failed with status code ' + str(request_response.status_code))
 
         return request_response
 
@@ -24,11 +24,5 @@ class BackendReader:
     # Uses built-in method json.loads()
     def deserialize_response(self) -> dict:
         json_dict = json.loads(self._req_resp.content)
-        self.trim_dict(json_dict, ['status'])
 
         return json_dict
-
-    # Trims off unnecessary keys from the dictionary
-    def trim_dict(self, json_dict: dict, trim_keys: list[str]) -> None:
-        for key in trim_keys:
-            json_dict.pop(key)
