@@ -9,7 +9,6 @@ from frontend.graphs.observe.Observer import Observer
 
 class DictHolder(Observable):
     _json_dict = []
-    # Dont touch that one during graph manipulation task
     _dict_copy = []
     _observers = []
 
@@ -20,14 +19,20 @@ class DictHolder(Observable):
         # Hardcoded change for test purpose only
         self._json_dict['graph']['nodes'][0]['name'] = "HHHHH"
 
+    # Starts an async loop that runs forever in order to
+    # continuously check the dictionary
     def async_loop(self) -> None:
         loop = asyncio.get_event_loop()
         asyncio.ensure_future(self.monitor_dict())
         loop.run_forever()
 
+    # Calls the checker function
     async def monitor_dict(self) -> None:
         await self.check_dict(1)
 
+    # Checks the dictionary for changes against a
+    # deepcopy of the same dictionary. If
+    # changes are recognized, the observer is notified
     async def check_dict(self, threshold: int):
         num_changes = 0
 
@@ -47,17 +52,19 @@ class DictHolder(Observable):
                         self.notify_observer()
                         return
 
-    # TODO: remove comment
+    # Adds an observer to the current observable
+    # in order to listen for changes
     def attach(self, observer: Observer) -> None:
         print('Observer added')
         self._observers.append(observer)
 
-    # TODO: remove comment
+    # Removes an observer of the current observable
     def detach(self, observer: Observer) -> None:
         print('Observer removed')
         self._observers.remove(observer)
 
-    # TODO: remove comment
+    # If changes in the observable are recognized,
+    # all attached observers are updated
     def notify_observer(self) -> None:
         print('notified')
         for observer in self._observers:
