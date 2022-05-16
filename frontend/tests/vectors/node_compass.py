@@ -69,25 +69,30 @@ def click_frame(event, x, y, flags, param) -> None:
                       spawned_circles[key].color,
                       -1)
 
+            # Only draws the vector if current circle is not main circle.
+            # Otherwise throws 'division by 0' error because we
+            # calculate focus_point - current circle_point. If both
+            # are equal, result = 0
             if not spawned_circles[key].pos == focus_point:
-                draw_vector(spawned_circles[key], recalc_scaling(spawned_circles[key]))
+                draw_vector(spawned_circles[key],
+                            recalc_scaling(spawned_circles[key]))
 
 def draw_focus_point(x: int, y: int) -> Circle:
-    circle = Circle(x, y, (0, 0, 255), 40)
+    circle = Circle(x, y, (0, 0, 255), 40, (x, y))
     cv.circle(img, circle.pos, circle.radius, circle.color, -1)
 
     return circle
 
 def draw_default_point(x: int, y: int) -> Circle:
-    circle = Circle(x, y, (0, 255, 0), 25)
+    circle = Circle(x, y, (0, 255, 0), 25, focus_point)
     cv.circle(img, circle.pos, circle.radius, circle.color, -1)
     draw_vector(circle, recalc_scaling(circle))
 
     return circle
 
 def recalc_scaling(circle: Circle) -> int:
-    direction_vect = calc_dir_vect(circle.pos, focus_point)
-    distance = calc_point_dist(direction_vect[0], direction_vect[1])
+    circle.recalc_dir_vect(circle.pos, focus_point)
+    distance = calc_point_dist(circle.dir_vect[0], circle.dir_vect[1])
 
     if distance >= 200:
         return 70
@@ -97,16 +102,10 @@ def recalc_scaling(circle: Circle) -> int:
         return 0
 
 def draw_vector(circle: Circle, length_scale: int) -> None:
-    direction_vect = calc_dir_vect(circle.pos, focus_point)
-    vector = normalize(direction_vect)
+    vector = normalize(circle.dir_vect)
     vector = (vector[0] * length_scale, vector[1] * length_scale) # Scale up vector size
     arrow_point = (round(circle.pos[0] + vector[0]), round(circle.pos[1] + vector[1]))
     cv.arrowedLine(img, circle.pos, arrow_point, (0, 0, 0), 2)
-
-def calc_dir_vect(circle_point: Tuple, focus_point: Tuple) -> Tuple:
-    dir_vect = (focus_point[0] - circle_point[0], focus_point[1] - circle_point[1])
-
-    return dir_vect
 
 def calc_point_dist(a: int, b: int) -> float:
     distance = math.sqrt(a ** 2 + b ** 2)
