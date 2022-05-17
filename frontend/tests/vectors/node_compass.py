@@ -75,7 +75,7 @@ def click_frame(event, x, y, flags, param) -> None:
             # are equal, result = 0
             if not spawned_circles[key].pos == focus_point:
                 draw_vector(spawned_circles[key],
-                            recalc_scaling(spawned_circles[key]))
+                            recalc_scaling(spawned_circles[key], 200, 50))
 
 def draw_focus_point(x: int, y: int) -> Circle:
     circle = Circle(x, y, (0, 0, 255), 40, (x, y))
@@ -86,18 +86,18 @@ def draw_focus_point(x: int, y: int) -> Circle:
 def draw_default_point(x: int, y: int) -> Circle:
     circle = Circle(x, y, (0, 255, 0), 25, focus_point)
     cv.circle(img, circle.pos, circle.radius, circle.color, -1)
-    draw_vector(circle, recalc_scaling(circle))
+    draw_vector(circle, recalc_scaling(circle, 200, 50))
 
     return circle
 
-def recalc_scaling(circle: Circle) -> int:
+def recalc_scaling(circle: Circle, upper_limit, lower_limit) -> int:
     circle.recalc_dir_vect(circle.pos, focus_point)
     distance = calc_point_dist(circle.dir_vect[0], circle.dir_vect[1])
 
-    if distance >= 200:
+    if distance >= upper_limit:
         return 70
-    elif 200 > distance > 50:
-        return round(distance / 2.8428) # replace magic number with smart equation
+    elif upper_limit > distance > lower_limit:
+        return round(distance / (upper_limit / 70))
     else:
         return 0
 
