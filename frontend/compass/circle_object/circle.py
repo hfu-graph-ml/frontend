@@ -1,8 +1,8 @@
-from typing import Tuple
+from typing import Tuple, Any
 
 
 class Circle:
-    def __init__(self, x, y, color, radius, focus):
+    def __init__(self, x: int, y: int, color: Any, radius: int, focus: Tuple):
         self.pos = (x, y)
         self.x_boundary = (x - radius, x + radius)
         self.y_boundary = (y - radius, y + radius)

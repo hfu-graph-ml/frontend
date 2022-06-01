@@ -4,9 +4,9 @@ from typing import Tuple
 import cv2 as cv
 import math
 
-from tests.circle_object.circle import Circle
+from compass.circle_object.circle import Circle
 
-# Small lambda function that'll take care of
+# Lambda function that'll take care of
 # checking whether or not a point x is
 # within two boundaries.
 within = lambda x, low, high: low <= x <= high
@@ -20,15 +20,15 @@ img_copy = copy.deepcopy(img)
 
 
 def click_frame(event, x, y, flags, param) -> None:
-    global spawned_circles, selected, img, img_copy, focus_point, selected_circle
+    global spawned_circles, selected, img, img_copy, focus_points, selected_circle
 
-    if event == cv.EVENT_LBUTTONDOWN and len(spawned_circles) == 0:
+    if event == cv.EVENT_LBUTTONDOWN and len(spawned_circles) % 2 == 0:
         circle = draw_focus_point(x, y)
         spawned_circles[circle.pos] = circle
-        focus_point += circle.pos
+        focus_points.append(circle.pos)
 
-    elif event == cv.EVENT_LBUTTONDOWN and len(spawned_circles) > 0:
-        circle = draw_default_point(x, y)
+    elif event == cv.EVENT_LBUTTONDOWN and len(spawned_circles) % 2 != 0:
+        circle = draw_default_point(x, y, focus_points.pop(0))
         spawned_circles[circle.pos] = circle
 
     elif event == cv.EVENT_RBUTTONDOWN:
@@ -54,13 +54,23 @@ def click_frame(event, x, y, flags, param) -> None:
         selected_circle.pos = (x, y)
         selected_circle.recalc_boundary()
 
-        # If the selected circle is the main circle,
-        # set focus point to new main circle position
+        # If the selected circle is a main circle,
+        # set focus point of sub-circles to new main circle position
         if (
-                within(focus_point[0], *selected_circle.x_boundary)
-                and within(focus_point[1], *selected_circle.y_boundary)
+                within(selected_circle.focus[0], *selected_circle.x_boundary)
+                and within(selected_circle.focus[1], *selected_circle.y_boundary)
         ):
-            focus_point = selected_circle.pos
+            for spawned_circle in spawned_circles.values():
+                if (
+                        (spawned_circle.focus == selected_circle.focus)
+                        and (spawned_circle.pos != selected_circle.pos)
+                ):
+                    # Update the sub-circle focus with its main circle position
+                    spawned_circle.focus = selected_circle.pos
+
+            # Update the focus point of the current main circle
+            # with its current position
+            selected_circle.focus = selected_circle.pos
 
         visualize_changes(spawned_circles)
 
@@ -72,18 +82,18 @@ def draw_focus_point(x: int, y: int) -> Circle:
     return circle
 
 
-def draw_default_point(x: int, y: int) -> Circle:
-    circle = Circle(x, y, (0, 255, 0), 25, focus_point)
+def draw_default_point(x: int, y: int, focus: Tuple) -> Circle:
+    circle = Circle(x, y, (0, 255, 0), 25, focus)
     cv.circle(img, circle.pos, circle.radius, circle.color, -1)
-    draw_vector(circle, recalc_scaling(circle, 200, 50))
+    draw_vector(circle, recalc_scaling(circle, 200, 50, focus))
 
     return circle
 
 
 # Calculates the length of the direction vector, based on the distance
-# of the current selected circle to the focus point and the window
+# of the current selected circle to its focus point and the window
 # resolution
-def recalc_scaling(circle: Circle, upper_limit, lower_limit) -> int:
+def recalc_scaling(circle: Circle, upper_limit, lower_limit, focus_point) -> int:
     global win_params
 
     circle.recalc_dir_vect(circle.pos, focus_point)
@@ -141,18 +151,19 @@ def visualize_changes(circles: dict) -> None:
                   circles[key].color,
                   -1)
 
-        # Only draws the vector if current circle is not main circle.
+        # Only draws the vector if current circle is not a main circle.
         # Otherwise throws 'division by 0' error because we
         # calculate focus_point - current circle_point. If both
         # are equal, result = 0
-        if not circles[key].pos == focus_point:
+        if not circles[key].pos == circles[key].focus:
             draw_vector(circles[key],
-                        recalc_scaling(circles[key], 200, 50))
+                        recalc_scaling(circles[key], 200, 50, circles[key].focus))
 
 
 title = 'Compass Demo'
 spawned_circles = {}
-focus_point = ()
+focus_points = []
+focus_copy = []
 selected_circle = None
 params_copy = ()
 
