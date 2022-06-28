@@ -3,7 +3,6 @@ import cv2 as cv
 import copy
 from typing import Tuple
 import math
-
 from confetti.particle_object.particle import Particle
 
 img = cv.imread('../images/blank_back.jpg')
@@ -11,10 +10,10 @@ img_copy = copy.deepcopy(img)
 
 height, width, _ = img.shape
 
-emit_pos_t = (round(width / 2), 0)
-emit_pos_r = (width, round(height / 2))
-emit_pos_b = (round(width / 2), height)
-emit_pos_l = (0, round(height / 2))
+emit_pos_tlc = (0, 0)
+emit_pos_trc = (width, 0)
+emit_pos_blc = (0, height)
+emit_pos_brc = (width, height)
 
 
 def init_particles(num: int) -> None:
@@ -25,17 +24,21 @@ def init_particles(num: int) -> None:
         r_radius = random.randint(2, 10)
 
         if i < 30:
-            end = rand_end_pos(emit_pos_t[0], emit_pos_t[1])
-            curr_part = Particle(emit_pos_t, r_radius, (r_blue, r_green, r_red), end, 10.0)
+            end = rand_end_pos(emit_pos_tlc[0], emit_pos_tlc[1])
+            curr_part = Particle(emit_pos_tlc, r_radius,
+                                 (r_blue, r_green, r_red), end, 10.0)
         elif i < 60:
-            end = rand_end_pos(emit_pos_r[0], emit_pos_r[1])
-            curr_part = Particle(emit_pos_r, r_radius, (r_blue, r_green, r_red), end, 10.0)
+            end = rand_end_pos(emit_pos_trc[0], emit_pos_trc[1])
+            curr_part = Particle(emit_pos_trc, r_radius,
+                                 (r_blue, r_green, r_red), end, 10.0)
         elif i < 90:
-            end = rand_end_pos(emit_pos_b[0], emit_pos_b[1])
-            curr_part = Particle(emit_pos_b, r_radius, (r_blue, r_green, r_red), end, 10.0)
+            end = rand_end_pos(emit_pos_blc[0], emit_pos_blc[1])
+            curr_part = Particle(emit_pos_blc, r_radius,
+                                 (r_blue, r_green, r_red), end, 10.0)
         else:
-            end = rand_end_pos(emit_pos_l[0], emit_pos_l[1])
-            curr_part = Particle(emit_pos_l, r_radius, (r_blue, r_green, r_red), end, 10.0)
+            end = rand_end_pos(emit_pos_brc[0], emit_pos_brc[1])
+            curr_part = Particle(emit_pos_brc, r_radius,
+                                 (r_blue, r_green, r_red), end, 10.0)
 
         particles.append(curr_part)
 
@@ -48,9 +51,12 @@ def start_anim() -> None:
 
     for particle in particles:
         if not particle.at_end and part_max_deviation >= particle.x >= -part_max_deviation:
-            particle.x += round(math.cos(launch_angle(particle.start, particle.end)) * particle.launch_velocity(10.0))
-            particle.y += round(math.sin(launch_angle(particle.start, particle.end)) * particle.launch_velocity(10.0))
-            cv.circle(img, (particle.x, particle.y), particle.radius, particle.color, -1)
+            particle.x += round(math.cos(launch_angle(particle.start,
+                                                      particle.end)) * particle.launch_velocity(10.0))
+            particle.y += round(math.sin(launch_angle(particle.start,
+                                                      particle.end)) * particle.launch_velocity(10.0))
+            cv.circle(img, (particle.x, particle.y),
+                      particle.radius, particle.color, -1)
             # cv.rectangle(img, (particle.x, particle.y), (particle.x + 8, particle.y + 20), particle.color, -1)
 
 

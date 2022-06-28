@@ -8,7 +8,7 @@ def calc_point_dist(a: int, b: int) -> float:
     return distance
 
 
-def translate(value, l_min, l_max, r_min, r_max):
+def translate(value, l_min, l_max, r_min, r_max) -> float:
     # Figure out how 'wide' each range is
     l_span = l_max - l_min
     r_span = r_max - r_min
